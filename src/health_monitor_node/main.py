@@ -16,13 +16,18 @@ def ros_func():
 
     rate = rospy.Rate(20)
     rospy.loginfo("Health monitoring")
+    faultlist = []
     while not rospy.is_shutdown():
-
+        faults = control_sub.get()
+        
         if control_sub.get() is not None:
-            pass
+            if control_sub.get.faults not in faultlist:
+                faultlist.append(control_sub.get.faults)
+
 
         pubmsg = Health_Monitor_Status()
-        #Add faults here
+        pubmsg = faultlist.sort(reverse = True, key = ['priority'])
+
         status_pub.publish(pubmsg)
 
         rate.sleep()
