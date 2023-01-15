@@ -10,24 +10,22 @@ from ck_ros_msgs_node.msg import Fault, Health_Monitor_Control, Health_Monitor_S
 
 def ros_func():
 
-    control_sub = BufferedROSMsgHandlerPy(health_monitor_node)
-    control_sub.register_for_updates("healthmonitorcontrol")
-    status_pub = rospy.Publisher(name="HealthMonitorStatus", data_class=Arm_Status, queue_size=50, tcp_nodelay=True)
+    control_sub = BufferedROSMsgHandlerPy(Health_Monitor_Control)
+    control_sub.register_for_updates("HealthMonitorControl")
+    status_pub = rospy.Publisher(name="HealthMonitorStatus", data_class=Health_Monitor_Status, queue_size=50, tcp_nodelay=True)
 
     rate = rospy.Rate(20)
+
     rospy.loginfo("Health monitoring")
     faultlist = []
     while not rospy.is_shutdown():
-        faults = control_sub.get()
-        
         if control_sub.get() is not None:
-            if control_sub.get.faults not in faultlist:
-                faultlist.append(control_sub.get.faults)
-
+            for fault in control_sub.get().faults:
+                if fault not in faultlist:
+                    faultlist.append(fault)
 
         pubmsg = Health_Monitor_Status()
-        pubmsg = faultlist.sort(reverse = True, key = ['priority'])
-
+        pubmsg.faults = faultlist.sort(reverse = True, key = "priority")
         status_pub.publish(pubmsg)
 
         rate.sleep()
