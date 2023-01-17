@@ -28,6 +28,7 @@ def ros_func():
         pubmsg.faults = faultlist.sort(reverse = True, key = "priority")
         status_pub.publish(pubmsg)
 
+
         rate.sleep()
 
 
