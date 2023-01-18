@@ -20,6 +20,8 @@ def ros_func():
     faultlist = []
     while not rospy.is_shutdown():
         if control_sub.get() is not None:
+            if control_sub.get().acknowledge:
+                faultlist.clear()
             for fault in control_sub.get().faults:
                 if fault not in faultlist:
                     faultlist.append(fault)
@@ -30,6 +32,7 @@ def ros_func():
 
 
         rate.sleep()
+
 
 
 def ros_main(node_name):
