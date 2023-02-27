@@ -6,6 +6,14 @@ import rospy
 from ck_ros_msgs_node.msg import Arm_Status, Fault, Health_Monitor_Control, Health_Monitor_Status, Intake_Status
 from frc_robot_utilities_py_node.frc_robot_utilities_py import *
 from frc_robot_utilities_py_node.RobotStatusHelperPy import BufferedROSMsgHandlerPy
+from ck_utilities_py_node.rosparam_helper import load_parameter_class
+import rosnode
+from dataclasses import dataclass, field
+from typing import List
+
+@dataclass
+class HealthMonitorParams():
+    node_checklist : List[str] = field(default_factory=list) 
 
 class HealthMonitorNode():
     """
@@ -27,6 +35,9 @@ class HealthMonitorNode():
 
         self.status_publisher = rospy.Publisher(name="HealthMonitorStatus", data_class=Health_Monitor_Status, queue_size=50, tcp_nodelay=True)
 
+        self.params = HealthMonitorParams()
+        load_parameter_class(self.params)
+
         t1 = Thread(target=self.loop)
         t1.start()
 
@@ -41,8 +52,16 @@ class HealthMonitorNode():
         """
 
         rate = rospy.Rate(20)
-
+        frame_counter = 0
+        ros_fully_booted = False
         while not rospy.is_shutdown():
+            if frame_counter % 10 == 0:
+                ros_fully_booted = True
+                node_list = rosnode.get_node_names()
+                for s in self.params.node_checklist:
+                    ros_fully_booted &= s in node_list
+                frame_counter = 0
+            frame_counter += 1
 
             if self.control_subscriber.get() is not None:
                 if self.control_subscriber.get().acknowledge:
@@ -112,6 +131,7 @@ class HealthMonitorNode():
 
             status = Health_Monitor_Status()
             status.faults = sorted(self.fault_list, key=lambda fault: fault.priority, reverse=True)
+            status.is_ros_fully_booted = ros_fully_booted
             self.status_publisher.publish(status)
 
             rate.sleep()
