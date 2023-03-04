@@ -98,7 +98,7 @@ class HealthMonitorNode():
 
                 if not arm_status_message.right_arm_base_remote_loss_of_signal:
                     right_arm_base_remote_loss_of_signal = Fault()
-                    right_arm_base_remote_loss_of_signal.code = "Rightt Arm Base Remote Loss of Signal"
+                    right_arm_base_remote_loss_of_signal.code = "Right Arm Base Remote Loss of Signal"
                     right_arm_base_remote_loss_of_signal.priority = 1
                     if right_arm_base_remote_loss_of_signal not in self.fault_list:
                         self.fault_list.append(right_arm_base_remote_loss_of_signal)
